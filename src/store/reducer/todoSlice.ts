@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 // import { ITodo } from "../components/interfaces";
 
@@ -10,21 +10,11 @@ export interface ITodo {
 
 interface TodosSliceState {
   todos: ITodo[];
+  status?: "idle" | "loading" | "failed";
 }
 
 const initialState: TodosSliceState = {
-  todos: [
-    {
-      id: 1,
-      todo: "test todo",
-      completed: true
-    },
-    {
-      id: 2,
-      todo: "do coding",
-      completed: false
-    }
-  ]
+  todos: []
 };
 
 export const todoSlice = createSlice({
@@ -53,10 +43,53 @@ export const todoSlice = createSlice({
         return todo;
       });
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTodos.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchTodos.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.todos = action.payload;
+      })
+      .addCase(fetchTodos.rejected, (state) => {
+        state.status = "failed";
+      });
   }
 });
+
+export const fetchTodos = createAsyncThunk("counter/fetchCount", async () => {
+  const response = await fetchCount();
+  return response.todos;
+});
+
+// A mock function to mimic making an async request for data
+export function fetchCount() {
+  return new Promise<{ todos: ITodo[] }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          todos: [
+            {
+              id: 100,
+              todo: "test todo",
+              completed: true
+            },
+            {
+              id: 200,
+              todo: "do coding",
+              completed: false
+            }
+          ]
+        }),
+      2000
+    )
+  );
+}
 
 // Action creators are generated for each case reducer function
 export const { addTodo, deleteTodo, completeTodo } = todoSlice.actions;
 
+// export todoStates =   (store: RootState) => store.todoStore;
 export default todoSlice.reducer;
