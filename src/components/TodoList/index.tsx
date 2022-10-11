@@ -6,7 +6,7 @@ import "./style.css";
 interface Props {
   todo: ITodo;
   key: number;
-  completeTodo(id: number): void;
+  completeTodo: (id: number) => void;
   deleteTodo: (id: number) => void;
 }
 
